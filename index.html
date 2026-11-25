@@ -186,7 +186,7 @@ var I18N = {
     },
     types: {
       switch: 'מתג תאורה חכם', boiler: 'דוד חשמל', ac: 'מזגן', plug: 'שקע חכם',
-      shutter: 'תריס חשמלי', breaker: 'מפסק בלוח החשמל', camera: 'מצלמת אבטחה', sensor: 'חיישן פתיחה'
+      shutter: 'תריס חשמלי', breaker: 'מפסק בלוח החשמל', camera: 'מצלמת אבטחה', sensor: 'חיישן פתיחה', climate: 'חיישן טמפרטורה ולחות'
     },
     opts: {
       breakerAmp: ['אמפר', { a10: '10A', a16: '16A', a20: '20A', a25: '25A', a32: '32A', a40: '40A', a63: '63A', unk: 'לא יודע/ת' }],
@@ -200,7 +200,8 @@ var I18N = {
       camStorage: ['אחסון', { cloud: 'ענן', sd: 'כרטיס זיכרון', both: 'שניהם' }],
       camLens: ['עדשה', { single: 'עדשה אחת', dual: 'עדשה כפולה' }],
       camWhere: ['מיקום', { indoor: 'בתוך הבית', outdoor: 'מחוץ לבית' }],
-      sensorKind: ['על', { door: 'דלת', window: 'חלון' }]
+      sensorKind: ['על', { door: 'דלת', window: 'חלון' }],
+      climateScreen: ['מסך', { yes: 'עם מסך', no: 'בלי מסך' }]
     }
   },
   fr: {
@@ -222,7 +223,7 @@ var I18N = {
     },
     types: {
       switch: 'Interrupteur', boiler: 'Chauffe-eau (doud hachmal)', ac: 'Climatiseur (mazgan)', plug: 'Prise connectée',
-      shutter: 'Volet électrique', breaker: 'Disjoncteur', camera: 'Caméra de surveillance', sensor: 'Détecteur d\'ouverture'
+      shutter: 'Volet électrique', breaker: 'Disjoncteur', camera: 'Caméra de surveillance', sensor: 'Détecteur d\'ouverture', climate: 'Capteur de température et d\'humidité'
     },
     opts: {
       breakerAmp: ['Ampérage', { a10: '10A', a16: '16A', a20: '20A', a25: '25A', a32: '32A', a40: '40A', a63: '63A', unk: 'Je ne sais pas' }],
@@ -236,7 +237,8 @@ var I18N = {
       camStorage: ['Stockage', { cloud: 'Cloud', sd: 'Carte mémoire', both: 'Les deux' }],
       camLens: ['Objectif', { single: 'Simple objectif', dual: 'Double objectif' }],
       camWhere: ['Emplacement', { indoor: 'Intérieur', outdoor: 'Extérieur' }],
-      sensorKind: ['Sur', { door: 'Porte', window: 'Fenêtre' }]
+      sensorKind: ['Sur', { door: 'Porte', window: 'Fenêtre' }],
+      climateScreen: ['Écran', { yes: 'Avec écran', no: 'Sans écran' }]
     }
   },
   en: {
@@ -258,7 +260,7 @@ var I18N = {
     },
     types: {
       switch: 'Light switch', boiler: 'Electric water heater', ac: 'Air conditioner', plug: 'Smart plug',
-      shutter: 'Electric shutter', breaker: 'Circuit breaker', camera: 'Security camera', sensor: 'Door/window sensor'
+      shutter: 'Electric shutter', breaker: 'Circuit breaker', camera: 'Security camera', sensor: 'Door/window sensor', climate: 'Temperature & humidity sensor'
     },
     opts: {
       breakerAmp: ['Amperage', { a10: '10A', a16: '16A', a20: '20A', a25: '25A', a32: '32A', a40: '40A', a63: '63A', unk: 'Not sure' }],
@@ -272,7 +274,8 @@ var I18N = {
       camStorage: ['Storage', { cloud: 'Cloud', sd: 'Memory card', both: 'Both' }],
       camLens: ['Lens', { single: 'Single lens', dual: 'Dual lens' }],
       camWhere: ['Location', { indoor: 'Indoor', outdoor: 'Outdoor' }],
-      sensorKind: ['On', { door: 'Door', window: 'Window' }]
+      sensorKind: ['On', { door: 'Door', window: 'Window' }],
+      climateScreen: ['Display', { yes: 'With display', no: 'Without display' }]
     }
   }
 };
@@ -286,9 +289,10 @@ var TYPE_OPTS = {
   shutter: ['shutterKind'],
   breaker: ['breakerAmp'],
   camera: ['camStorage', 'camLens', 'camWhere'],
-  sensor: ['sensorKind']
+  sensor: ['sensorKind'],
+  climate: ['climateScreen']
 };
-var TYPE_ORDER = ['switch', 'boiler', 'ac', 'plug', 'shutter', 'breaker', 'camera', 'sensor'];
+var TYPE_ORDER = ['switch', 'boiler', 'ac', 'plug', 'shutter', 'breaker', 'camera', 'sensor', 'climate'];
 
 var lang = 'he';
 var rowsEl = document.getElementById('rows');
