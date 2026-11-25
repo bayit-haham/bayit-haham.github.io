@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he" dir="rtl" translate="no">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>שאלון בית חכם</title>
 <style>
@@ -82,6 +83,8 @@
     .del { margin-top: 0; position: absolute; top: 2px; inset-inline-end: 4px; height: 32px; }
     .row .type { grid-column: 1 / -1; }
     .row .opts-cell { grid-column: 1 / -1; }
+    .row > div { min-width: 0; }
+    .row .type select, .row .opts select { width: 100%; min-width: 0; }
     .row .del { justify-self: end; }
   }
   .add {
@@ -508,8 +511,19 @@ function flushDraft() {
 document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flushDraft(); });
 window.addEventListener('pagehide', flushDraft);
 
+// Opens in the visitor's language when it is one we offer (Hebrew otherwise).
+function initialLang() {
+  var list = navigator.languages || [navigator.language || ''];
+  for (var i = 0; i < list.length; i++) {
+    var l = String(list[i]).slice(0, 2).toLowerCase();
+    if (l === 'iw') l = 'he';
+    if (I18N[l]) return l;
+  }
+  return 'he';
+}
+
 addRow();
-setLang('he');
+setLang(initialLang());
 </script>
 </body>
 </html>
