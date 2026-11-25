@@ -170,7 +170,7 @@ var I18N = {
   he: {
     dir: 'rtl', title: 'שאלון בית חכם',
     intro: 'ספרו לנו מה תרצו להתקין בבית, ונחזור אליכם עם הצעת מחיר.',
-    contactH: 'פרטי התקשרות', contactHint: 'נשתמש בפרטים רק כדי לחזור אליכם.',
+    contactH: 'פרטי התקשרות', contactHint: 'נשתמש בפרטים רק כדי לחזור אליכם. התשובות נשמרות תוך כדי מילוי.',
     name: 'שם מלא', phone: 'טלפון / וואטסאפ', area: 'שכונה ועיר', email: 'אימייל (לא חובה)',
     equipH: 'מה תרצו להתקין?', equipHint: 'שורה אחת לכל סוג ציוד. לחצו על + כדי להוסיף שורה.',
     type: 'סוג', choose: 'בחרו…', qty: 'כמות', room: 'חדר (לא חובה)', roomPh: 'סלון, מטבח…',
@@ -207,7 +207,7 @@ var I18N = {
   fr: {
     dir: 'ltr', title: 'Questionnaire maison connectée',
     intro: 'Dites-nous ce que vous souhaitez installer chez vous, nous revenons vers vous avec un devis.',
-    contactH: 'Vos coordonnées', contactHint: 'Elles servent uniquement à vous recontacter.',
+    contactH: 'Vos coordonnées', contactHint: 'Elles servent uniquement à vous recontacter. Vos réponses sont enregistrées au fur et à mesure.',
     name: 'Nom complet', phone: 'Téléphone / WhatsApp', area: 'Quartier et ville', email: 'E-mail (facultatif)',
     equipH: 'Que souhaitez-vous installer ?', equipHint: 'Une ligne par type d\'équipement. Cliquez sur + pour ajouter une ligne.',
     type: 'Type', choose: 'Choisir…', qty: 'Quantité', room: 'Pièce (facultatif)', roomPh: 'Salon, cuisine…',
@@ -244,7 +244,7 @@ var I18N = {
   en: {
     dir: 'ltr', title: 'Smart home questionnaire',
     intro: 'Tell us what you would like to install at home, and we will get back to you with a quote.',
-    contactH: 'Contact details', contactHint: 'Used only to get back to you.',
+    contactH: 'Contact details', contactHint: 'Used only to get back to you. Your answers are saved as you type.',
     name: 'Full name', phone: 'Phone / WhatsApp', area: 'Neighborhood and city', email: 'Email (optional)',
     equipH: 'What would you like to install?', equipHint: 'One line per type of device. Click + to add a line.',
     type: 'Type', choose: 'Choose…', qty: 'Quantity', room: 'Room (optional)', roomPh: 'Living room, kitchen…',
@@ -295,6 +295,11 @@ var TYPE_OPTS = {
 var TYPE_ORDER = ['switch', 'boiler', 'ac', 'plug', 'shutter', 'breaker', 'camera', 'sensor', 'climate'];
 
 var lang = 'he';
+// Identifies this visit so drafts update the same row in the spreadsheet.
+var SID = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+var submitted = false;
+var lastDraft = '';
+var draftTimer = null;
 var rowsEl = document.getElementById('rows');
 
 function t(k) { return I18N[lang][k]; }
@@ -410,6 +415,7 @@ function collect() {
   });
   function v(id) { return document.getElementById(id).value.trim(); }
   return {
+    sid: SID,
     lang: lang,
     name: v('name'), phone: v('phone'), area: v('area'), email: v('email'),
     wifi: textOf(document.getElementById('wifi')),
@@ -440,12 +446,18 @@ document.getElementById('f').addEventListener('submit', function (ev) {
   }
   var btn = document.getElementById('send');
   btn.disabled = true; btn.textContent = t('sending');
+  // No draft may overwrite things while the real request is on its way.
+  submitted = true;
+  clearTimeout(draftTimer);
   function done() {
+    submitted = true;
+    clearTimeout(draftTimer);
     document.getElementById('f').hidden = true;
     document.getElementById('thanks').hidden = false;
     window.scrollTo(0, 0);
   }
   function fail() {
+    submitted = false;
     btn.disabled = false; btn.textContent = t('send');
     err.textContent = t('errSend');
   }
@@ -458,6 +470,43 @@ document.getElementById('f').addEventListener('submit', function (ev) {
     .then(function (j) { if (j && j.ok) done(); else fail(); })
     .catch(fail);
 });
+
+// Saves what the visitor typed so far, so an unfinished form is not lost.
+function draftPayload() {
+  var d = collect();
+  if (!d.name && !d.phone) return null;
+  d.draft = true;
+  var json = JSON.stringify(d);
+  return json === lastDraft ? null : json;
+}
+function saveDraft() {
+  if (submitted) return;
+  var json = draftPayload();
+  if (!json) return;
+  lastDraft = json;
+  fetch(ENDPOINT, {
+    method: 'POST', credentials: 'omit', keepalive: true,
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: json
+  }).catch(function () { lastDraft = ''; });
+}
+function scheduleDraft() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(saveDraft, 3000);
+}
+document.getElementById('f').addEventListener('input', scheduleDraft);
+document.getElementById('f').addEventListener('change', scheduleDraft);
+document.getElementById('addRow').addEventListener('click', scheduleDraft);
+// Last chance when the visitor leaves or switches app.
+function flushDraft() {
+  if (submitted) return;
+  var json = draftPayload();
+  if (!json) return;
+  lastDraft = json;
+  if (navigator.sendBeacon) navigator.sendBeacon(ENDPOINT, new Blob([json], { type: 'text/plain' }));
+  else saveDraft();
+}
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flushDraft(); });
+window.addEventListener('pagehide', flushDraft);
 
 addRow();
 setLang('he');
